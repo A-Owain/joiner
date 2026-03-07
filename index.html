@@ -20,7 +20,7 @@
 
     @font-face {
       font-family: 'PingAR';
-      src: url('./assets/fonts/PingAR+LT-Heavy.otf') format('opentype');
+      src: url('./assets/fonts/PingAR+LT-bold.otf') format('opentype');
       font-weight: 800;
       font-style: normal;
     }
@@ -299,7 +299,7 @@
 
     .t-body {
       font-weight: 800;
-      font-size: 13.333px; /* approx 10pt */
+      font-size: 10px;
       line-height: 1.22;
       letter-spacing: -0.01em;
     }
@@ -511,7 +511,7 @@
       cardWidth: 400,
       cardHeight: 700,
       avatar: { x: 135, y: 230, width: 130, height: 130 },
-      body: { x: 50, y: 460, width: 300, fontSize: 13.333, lineHeight: 1.22 }
+      body: { x: 50, y: 460, width: 300, fontSize: 10, lineHeight: 1.22 }
     };
 
     const state = {
@@ -573,8 +573,10 @@
         ? `Line Manager: ${managerName} (${managerDepartment})`
         : `Line Manager: ${managerName}`;
 
-      return `${prefix} ${fullName} has joined Alraedah Finance
+      return `${prefix} ${fullName}, has joined Alraedah Finance
 as a ${jobTitle} in ${department}.
+
+
 
 ${managerLine}
 You can reach ${pronoun} at: ${email}`;
@@ -794,7 +796,7 @@ You can reach ${pronoun} at: ${email}`;
       const bodyFontSize = LAYOUT.body.fontSize * scaleY;
       const lineHeight = bodyFontSize * LAYOUT.body.lineHeight;
 
-      ctx.fillStyle = '#213d82';
+      ctx.fillStyle = '#194796';
       ctx.textBaseline = 'top';
       ctx.font = `800 ${bodyFontSize}px PingAR`;
 
