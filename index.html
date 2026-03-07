@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>New Joiner Card Generator</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+  />
+
+  <style>
+    @font-face {
+      font-family: 'PingAR';
+      src: url('./assets/fonts/PingAR+LT-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'PingAR';
+      src: url('./assets/fonts/PingAR+LT-Heavy.otf') format('opentype');
+      font-weight: 800;
+      font-style: normal;
+    }
+
+    :root {
+      --panel: #ffffff;
+      --text: #132238;
+      --muted: #65738a;
+      --line: #d9dfeb;
+      --brand: #213d82;
+      --brand-2: #2e57b0;
+      --danger: #d64545;
+      --shadow: 0 18px 45px rgba(17, 34, 68, 0.10);
+
+      --card-width: 400px;
+      --card-height: 700px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #f6f8fc 0%, #eef2f9 100%);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 22px;
+      position: sticky;
+      top: 24px;
+      align-self: start;
+    }
+
+    .controls h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .controls p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-of-type {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      transition: 0.18s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--brand-2);
+      box-shadow: 0 0 0 4px rgba(46, 87, 176, 0.08);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      font: inherit;
+      color: var(--muted);
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-row button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+      min-width: 110px;
+    }
+
+    .toggle-row button.active {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: var(--brand);
+      color: white;
+    }
+
+    .btn.secondary {
+      background: #eef3ff;
+      color: var(--brand);
+    }
+
+    .btn.danger {
+      background: #fff2f2;
+      color: var(--danger);
+      border: 1px solid #ffd8d8;
+    }
+
+    .preview-wrap {
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .preview-frame {
+      width: 100%;
+      min-height: calc(100vh - 48px);
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top left, rgba(46, 87, 176, 0.06), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(33, 61, 130, 0.06), transparent 28%),
+        #f3f6fb;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: auto;
+      padding: 32px;
+    }
+
+    #card {
+      position: relative;
+      width: var(--card-width);
+      height: var(--card-height);
+      background-image: url('./assets/backgrounds/welcome-card-bg.png');
+      background-size: 100% 100%;
+      background-position: top left;
+      background-repeat: no-repeat;
+      overflow: hidden;
+      color: var(--brand);
+      font-family: 'PingAR', Inter, Arial, sans-serif;
+      box-shadow: 0 20px 50px rgba(18, 31, 61, 0.16);
+      border-radius: 0;
+    }
+
+    .avatar {
+      position: absolute;
+      left: 135px;
+      top: 230px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      display: block;
+      object-position: center;
+      background: transparent;
+    }
+
+    .avatar.is-photo {
+      object-fit: cover;
+    }
+
+    .avatar.is-default {
+      object-fit: contain;
+      transform-origin: center center;
+    }
+
+    .avatar.is-default.male-default {
+      transform: scale(0.80);
+    }
+
+    .avatar.is-default.female-default {
+      transform: scale(0.76);
+    }
+
+    .text-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .t {
+      position: absolute;
+      left: 50px;
+      top: 460px;
+      width: 300px;
+      color: var(--brand);
+      white-space: pre-line;
+    }
+
+    .t-body {
+      font-weight: 800;
+      font-size: 13.333px; /* approx 10pt */
+      line-height: 1.22;
+      letter-spacing: -0.01em;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .crop-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 18, 33, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 9999;
+    }
+
+    .crop-dialog {
+      width: min(760px, 100%);
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    .crop-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    .crop-body {
+      padding: 20px;
+    }
+
+    .crop-image-wrap {
+      width: 100%;
+      max-height: 70vh;
+      overflow: hidden;
+      background: #f7f9fe;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    #cropImage {
+      display: block;
+      max-width: 100%;
+    }
+
+    .crop-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      padding: 16px 20px 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 1180px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+
+      .preview-frame {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="panel controls">
+      <h1>New Joiner Card Generator</h1>
+      <p>
+        Fixed branded template with editable placeholders only.
+        Upload and crop a photo, or use the default gender avatar, then export the card as PNG.
+      </p>
+
+      <div class="section">
+        <div class="section-title">Joiner Info</div>
+
+        <div class="grid">
+          <div class="field full">
+            <label>Gender</label>
+            <div class="toggle-row" id="genderToggle">
+              <button type="button" data-gender="female" class="active">Female</button>
+              <button type="button" data-gender="male">Male</button>
+            </div>
+          </div>
+
+          <div class="field full" id="femalePrefixField">
+            <label for="prefix">Prefix</label>
+            <select id="prefix">
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+            </select>
+          </div>
+
+          <div class="field full">
+            <label for="fullName">Full Name</label>
+            <input id="fullName" type="text" placeholder="e.g. Sarah Ahmed" />
+          </div>
+
+          <div class="field full">
+            <label for="jobTitle">Job Title</label>
+            <input id="jobTitle" type="text" placeholder="e.g. Senior Analyst" />
+          </div>
+
+          <div class="field full">
+            <label for="department">Department</label>
+            <input id="department" type="text" placeholder="e.g. Internal Communication" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Manager & Contact</div>
+
+        <div class="grid">
+          <div class="field full">
+            <label for="managerName">Line Manager Name</label>
+            <input id="managerName" type="text" placeholder="e.g. Fatimah Alqahtani" />
+          </div>
+
+          <div class="field full">
+            <label for="managerDepartment">Line Manager Department</label>
+            <input id="managerDepartment" type="text" placeholder="Optional" />
+          </div>
+
+          <div class="field full">
+            <label for="email">Email Address</label>
+            <input id="email" type="email" placeholder="e.g. name@alraedah.sa" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Photo</div>
+
+        <div class="field">
+          <label for="photoUpload">Upload New Joiner Photo</label>
+          <input id="photoUpload" type="file" accept="image/*" />
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn secondary" id="cropNewBtn">Crop Current Photo</button>
+          <button type="button" class="btn danger" id="resetPhotoBtn">Reset Photo</button>
+        </div>
+
+        <div class="note">
+          If no image is uploaded, the tool will use the default gender avatar automatically.
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn primary" id="exportBtn">Export PNG</button>
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <div class="preview-frame">
+        <div id="card">
+          <img id="avatarImage" class="avatar" alt="Avatar" />
+          <div class="text-layer">
+            <div id="bodyText" class="t t-body"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="cropModal" class="crop-modal hidden">
+    <div class="crop-dialog">
+      <div class="crop-header">Crop Photo</div>
+      <div class="crop-body">
+        <div class="crop-image-wrap">
+          <img id="cropImage" alt="Crop preview" />
+        </div>
+      </div>
+      <div class="crop-actions">
+        <button type="button" class="btn secondary" id="cancelCropBtn">Cancel</button>
+        <button type="button" class="btn primary" id="applyCropBtn">Apply Crop</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script>
+    const ASSETS = {
+      background: './assets/backgrounds/welcome-card-bg.png',
+      maleAvatar: './assets/avatars/male-default.png',
+      femaleAvatar: './assets/avatars/female-default.png'
+    };
+
+    const LAYOUT = {
+      cardWidth: 400,
+      cardHeight: 700,
+      avatar: { x: 135, y: 230, width: 130, height: 130 },
+      body: { x: 50, y: 460, width: 300, fontSize: 13.333, lineHeight: 1.22 }
+    };
+
+    const state = {
+      gender: 'female',
+      uploadedPhoto: null,
+      rawUploadUrl: null,
+      cropper: null
+    };
+
+    const els = {
+      avatarImage: document.getElementById('avatarImage'),
+      bodyText: document.getElementById('bodyText'),
+
+      prefix: document.getElementById('prefix'),
+      femalePrefixField: document.getElementById('femalePrefixField'),
+      fullName: document.getElementById('fullName'),
+      jobTitle: document.getElementById('jobTitle'),
+      department: document.getElementById('department'),
+      managerName: document.getElementById('managerName'),
+      managerDepartment: document.getElementById('managerDepartment'),
+      email: document.getElementById('email'),
+
+      genderButtons: document.querySelectorAll('#genderToggle button'),
+
+      photoUpload: document.getElementById('photoUpload'),
+      cropNewBtn: document.getElementById('cropNewBtn'),
+      resetPhotoBtn: document.getElementById('resetPhotoBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+
+      cropModal: document.getElementById('cropModal'),
+      cropImage: document.getElementById('cropImage'),
+      applyCropBtn: document.getElementById('applyCropBtn'),
+      cancelCropBtn: document.getElementById('cancelCropBtn')
+    };
+
+    function getSelectedPrefix() {
+      return state.gender === 'male' ? 'Mr.' : (els.prefix.value || 'Ms.');
+    }
+
+    function getReachPronoun() {
+      return state.gender === 'male' ? 'him' : 'her';
+    }
+
+    function getFallbackAvatar() {
+      return state.gender === 'male' ? ASSETS.maleAvatar : ASSETS.femaleAvatar;
+    }
+
+    function getBodyCopy() {
+      const prefix = getSelectedPrefix();
+      const fullName = els.fullName.value.trim() || 'Full Name';
+      const jobTitle = els.jobTitle.value.trim() || 'Job Title';
+      const department = els.department.value.trim() || 'Department';
+      const managerName = els.managerName.value.trim() || 'Manager Name';
+      const managerDepartment = els.managerDepartment.value.trim();
+      const email = els.email.value.trim() || 'name@alraedah.sa';
+      const pronoun = getReachPronoun();
+
+      const managerLine = managerDepartment
+        ? `Line Manager: ${managerName} (${managerDepartment})`
+        : `Line Manager: ${managerName}`;
+
+      return `${prefix} ${fullName} has joined Alraedah Finance
+as a ${jobTitle} in ${department}.
+
+${managerLine}
+You can reach ${pronoun} at: ${email}`;
+    }
+
+    function renderPrefixUI() {
+      if (state.gender === 'male') {
+        els.femalePrefixField.classList.add('hidden');
+      } else {
+        els.femalePrefixField.classList.remove('hidden');
+      }
+    }
+
+    function renderGenderButtons() {
+      els.genderButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.gender === state.gender);
+      });
+    }
+
+    function renderAvatar() {
+      const isUploaded = !!state.uploadedPhoto;
+
+      els.avatarImage.src = state.uploadedPhoto || getFallbackAvatar();
+      els.avatarImage.classList.remove('is-photo', 'is-default', 'male-default', 'female-default');
+
+      if (isUploaded) {
+        els.avatarImage.classList.add('is-photo');
+      } else {
+        els.avatarImage.classList.add('is-default');
+        els.avatarImage.classList.add(state.gender === 'male' ? 'male-default' : 'female-default');
+      }
+    }
+
+    function renderBody() {
+      els.bodyText.textContent = getBodyCopy();
+    }
+
+    function render() {
+      renderPrefixUI();
+      renderGenderButtons();
+      renderAvatar();
+      renderBody();
+    }
+
+    function destroyCropper() {
+      if (state.cropper) {
+        state.cropper.destroy();
+        state.cropper = null;
+      }
+    }
+
+    function openCropModal(imageSrc) {
+      destroyCropper();
+      els.cropImage.src = imageSrc;
+      els.cropModal.classList.remove('hidden');
+
+      state.cropper = new Cropper(els.cropImage, {
+        aspectRatio: 1,
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 1,
+        responsive: true,
+        background: false
+      });
+    }
+
+    function closeCropModal() {
+      destroyCropper();
+      els.cropModal.classList.add('hidden');
+    }
+
+    function readImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function safeFileName(str) {
+      return String(str || 'new-joiner-card')
+        .trim()
+        .replace(/[<>:"/\\|?*]+/g, '')
+        .replace(/\s+/g, '-')
+        .toLowerCase();
+    }
+
+    async function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    function drawWrappedLine(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let currentY = y;
+
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line ? `${line} ${words[i]}` : words[i];
+        const testWidth = ctx.measureText(testLine).width;
+
+        if (testWidth > maxWidth && line) {
+          ctx.fillText(line, x, currentY);
+          line = words[i];
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+
+      if (line) {
+        ctx.fillText(line, x, currentY);
+        currentY += lineHeight;
+      }
+
+      return currentY;
+    }
+
+    function drawParagraph(ctx, text, x, y, maxWidth, lineHeight) {
+      const lines = text.split('\n');
+
+      let currentY = y;
+      for (const line of lines) {
+        if (line.trim() === '') {
+          currentY += lineHeight;
+          continue;
+        }
+        currentY = drawWrappedLine(ctx, line, x, currentY, maxWidth, lineHeight);
+      }
+      return currentY;
+    }
+
+    async function exportCardAsPNG() {
+      const exportWidth = 3840;
+      const exportHeight = 6720;
+
+      const scaleX = exportWidth / LAYOUT.cardWidth;
+      const scaleY = exportHeight / LAYOUT.cardHeight;
+
+      await document.fonts.ready;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = exportWidth;
+      canvas.height = exportHeight;
+
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      const bg = await loadImage(ASSETS.background);
+      ctx.drawImage(bg, 0, 0, exportWidth, exportHeight);
+
+      const avatarSrc = state.uploadedPhoto || getFallbackAvatar();
+      const avatar = await loadImage(avatarSrc);
+
+      const ax = LAYOUT.avatar.x * scaleX;
+      const ay = LAYOUT.avatar.y * scaleY;
+      const aw = LAYOUT.avatar.width * scaleX;
+      const ah = LAYOUT.avatar.height * scaleY;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(ax + aw / 2, ay + ah / 2, aw / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
+      if (state.uploadedPhoto) {
+        const imgRatio = avatar.width / avatar.height;
+        const boxRatio = aw / ah;
+
+        let drawW, drawH, drawX, drawY;
+
+        if (imgRatio > boxRatio) {
+          drawH = ah;
+          drawW = ah * imgRatio;
+          drawX = ax - (drawW - aw) / 2;
+          drawY = ay;
+        } else {
+          drawW = aw;
+          drawH = aw / imgRatio;
+          drawX = ax;
+          drawY = ay - (drawH - ah) / 2;
+        }
+
+        ctx.drawImage(avatar, drawX, drawY, drawW, drawH);
+      } else {
+        const shrink = state.gender === 'male' ? 0.80 : 0.76;
+        const fitW = aw * shrink;
+        const fitH = ah * shrink;
+        const fitX = ax + (aw - fitW) / 2;
+        const fitY = ay + (ah - fitH) / 2;
+
+        ctx.drawImage(avatar, fitX, fitY, fitW, fitH);
+      }
+
+      ctx.restore();
+
+      const bodyX = LAYOUT.body.x * scaleX;
+      const bodyY = LAYOUT.body.y * scaleY;
+      const bodyW = LAYOUT.body.width * scaleX;
+      const bodyFontSize = LAYOUT.body.fontSize * scaleY;
+      const lineHeight = bodyFontSize * LAYOUT.body.lineHeight;
+
+      ctx.fillStyle = '#213d82';
+      ctx.textBaseline = 'top';
+      ctx.font = `800 ${bodyFontSize}px PingAR`;
+
+      drawParagraph(ctx, getBodyCopy(), bodyX, bodyY, bodyW, lineHeight);
+
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png');
+      });
+    }
+
+    els.genderButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.gender = btn.dataset.gender;
+
+        if (state.gender === 'female' && !['Ms.', 'Mrs.'].includes(els.prefix.value)) {
+          els.prefix.value = 'Ms.';
+        }
+
+        render();
+      });
+    });
+
+    [
+      els.prefix,
+      els.fullName,
+      els.jobTitle,
+      els.department,
+      els.managerName,
+      els.managerDepartment,
+      els.email
+    ].forEach(input => {
+      input.addEventListener('input', render);
+    });
+
+    els.photoUpload.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const dataUrl = await readImageFile(file);
+        state.rawUploadUrl = dataUrl;
+        openCropModal(dataUrl);
+      } catch (err) {
+        console.error(err);
+        alert('Could not read the uploaded image.');
+      }
+    });
+
+    els.cropNewBtn.addEventListener('click', () => {
+      if (!state.rawUploadUrl && !state.uploadedPhoto) {
+        alert('Please upload a photo first.');
+        return;
+      }
+      openCropModal(state.rawUploadUrl || state.uploadedPhoto);
+    });
+
+    els.applyCropBtn.addEventListener('click', () => {
+      if (!state.cropper) return;
+
+      const croppedCanvas = state.cropper.getCroppedCanvas({
+        width: 1200,
+        height: 1200,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+
+      state.uploadedPhoto = croppedCanvas.toDataURL('image/png');
+      closeCropModal();
+      render();
+    });
+
+    els.cancelCropBtn.addEventListener('click', () => {
+      closeCropModal();
+    });
+
+    els.cropModal.addEventListener('click', (e) => {
+      if (e.target === els.cropModal) {
+        closeCropModal();
+      }
+    });
+
+    els.resetPhotoBtn.addEventListener('click', () => {
+      state.uploadedPhoto = null;
+      state.rawUploadUrl = null;
+      els.photoUpload.value = '';
+      render();
+    });
+
+    els.exportBtn.addEventListener('click', async () => {
+      try {
+        const blob = await exportCardAsPNG();
+        if (!blob) {
+          alert('Export failed.');
+          return;
+        }
+
+        const name = safeFileName(els.fullName.value || 'new-joiner');
+        downloadBlob(blob, `${name}-card.png`);
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong during export.');
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
