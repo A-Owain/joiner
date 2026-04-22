@@ -562,6 +562,10 @@
       cancelCropBtn: document.getElementById('cancelCropBtn')
     };
 
+    function getSelectedPrefix() {
+      return state.gender === 'male' ? 'Mr.' : 'Ms.';
+    }
+
     function getReachPronoun() {
       return state.gender === 'male' ? 'him' : 'her';
     }
@@ -578,6 +582,7 @@
     }
 
     function getBodyCopy() {
+      const prefix = getSelectedPrefix();
       const fullName = els.fullName.value.trim() || 'Full Name';
       const jobTitle = els.jobTitle.value.trim() || 'Job Title';
       const department = getDepartmentValue();
@@ -850,6 +855,13 @@ Human Resources`;
     els.genderButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         state.gender = btn.dataset.gender;
+
+        els.genderButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.gender = btn.dataset.gender;
+            render();
+          });
+        });
 
         render();
       });
