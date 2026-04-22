@@ -398,7 +398,6 @@
             <label for="prefix">Prefix</label>
             <select id="prefix">
               <option value="Ms.">Ms.</option>
-              <option value="Mrs.">Mrs.</option>
             </select>
           </div>
 
@@ -875,7 +874,7 @@ Human Resources`;
       btn.addEventListener('click', () => {
         state.gender = btn.dataset.gender;
 
-        if (state.gender === 'female' && !['Ms.', 'Mrs.'].includes(els.prefix.value)) {
+        if (state.gender === 'female' && !['Ms.'].includes(els.prefix.value)) {
           els.prefix.value = 'Ms.';
         }
 
