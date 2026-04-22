@@ -394,13 +394,6 @@
             </div>
           </div>
 
-          <div class="field full" id="femalePrefixField">
-            <label for="prefix">Prefix</label>
-            <select id="prefix">
-              <option value="Ms.">Ms.</option>
-            </select>
-          </div>
-
           <div class="field full">
             <label for="fullName">Full Name</label>
             <input id="fullName" type="text" placeholder="e.g. Sarah Ahmed" />
@@ -543,8 +536,6 @@
       avatarImage: document.getElementById('avatarImage'),
       bodyText: document.getElementById('bodyText'),
 
-      prefix: document.getElementById('prefix'),
-      femalePrefixField: document.getElementById('femalePrefixField'),
       fullName: document.getElementById('fullName'),
       jobTitle: document.getElementById('jobTitle'),
 
@@ -587,7 +578,6 @@
     }
 
     function getBodyCopy() {
-      const prefix = getSelectedPrefix();
       const fullName = els.fullName.value.trim() || 'Full Name';
       const jobTitle = els.jobTitle.value.trim() || 'Job Title';
       const department = getDepartmentValue();
@@ -633,14 +623,6 @@ Human Resources`;
       els.bodyText.style.lineHeight = String(LAYOUT.body.lineHeight);
     }
 
-    function renderPrefixUI() {
-      if (state.gender === 'male') {
-        els.femalePrefixField.classList.add('hidden');
-      } else {
-        els.femalePrefixField.classList.remove('hidden');
-      }
-    }
-
     function renderDepartmentUI() {
       const isCustom = els.departmentMode.value === 'custom';
       els.departmentSelectWrap.classList.toggle('hidden', isCustom);
@@ -673,7 +655,6 @@ Human Resources`;
 
     function render() {
       applyLayoutToPreview();
-      renderPrefixUI();
       renderDepartmentUI();
       renderGenderButtons();
       renderAvatar();
@@ -870,16 +851,11 @@ Human Resources`;
       btn.addEventListener('click', () => {
         state.gender = btn.dataset.gender;
 
-        if (state.gender === 'female' && !['Ms.'].includes(els.prefix.value)) {
-          els.prefix.value = 'Ms.';
-        }
-
         render();
       });
     });
 
     [
-      els.prefix,
       els.fullName,
       els.jobTitle,
       els.departmentMode,
