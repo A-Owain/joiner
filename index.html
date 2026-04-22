@@ -571,10 +571,6 @@
       cancelCropBtn: document.getElementById('cancelCropBtn')
     };
 
-    function getSelectedPrefix() {
-      return state.gender === 'male' ? 'Mr.' : (els.prefix.value || 'Ms.');
-    }
-
     function getReachPronoun() {
       return state.gender === 'male' ? 'him' : 'her';
     }
