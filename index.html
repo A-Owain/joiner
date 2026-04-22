@@ -20,7 +20,7 @@
 
     @font-face {
       font-family: 'PingAR';
-      src: url('./assets/fonts/PingAR+LT-bold.otf') format('opentype');
+      src: url('./assets/fonts/PingAR+LT-Bold.otf') format('opentype');
       font-weight: 800;
       font-style: normal;
     }
@@ -30,7 +30,7 @@
       --text: #132238;
       --muted: #65738a;
       --line: #d9dfeb;
-      --brand: #184796; /* Body Color*/
+      --brand: #184796;
       --brand-2: #2e57b0;
       --danger: #d64545;
       --shadow: 0 18px 45px rgba(17, 34, 68, 0.10);
@@ -255,12 +255,8 @@
 
     .avatar {
       position: absolute;
-      left: 135px;
-      top: 230px;
-      width: 130px;
-      height: 130px;
-      border-radius: 50%;
       display: block;
+      border-radius: 50%;
       object-position: center;
       background: transparent;
     }
@@ -290,17 +286,12 @@
 
     .t {
       position: absolute;
-      left: 50px;
-      top: 412px; /* Body Height*/
-      width: 300px;
       color: var(--brand);
       white-space: pre-line;
     }
 
     .t-body {
       font-weight: 800;
-      font-size: 10px;
-      line-height: 1.22;
       letter-spacing: -0.01em;
     }
 
@@ -422,8 +413,35 @@
           </div>
 
           <div class="field full">
-            <label for="department">Department</label>
-            <input id="department" type="text" placeholder="e.g. Internal Communication" />
+            <label for="departmentMode">Department Entry Type</label>
+            <select id="departmentMode">
+              <option value="select">Select from list</option>
+              <option value="custom">Enter manually</option>
+            </select>
+          </div>
+
+          <div class="field full" id="departmentSelectWrap">
+            <label for="departmentSelect">Department</label>
+            <select id="departmentSelect">
+              <option value="">Select department</option>
+              <option value="Direct Lending">Direct Lending</option>
+              <option value="Digital Lending">Digital Lending</option>
+              <option value="Customer Care">Customer Care</option>
+              <option value="Customer Success">Customer Success</option>
+              <option value="Finance">Finance</option>
+              <option value="Risk">Risk</option>
+              <option value="Cyber Security">Cyber Security</option>
+              <option value="Compliance">Compliance</option>
+              <option value="IT &amp; Infrastructure">IT &amp; Infrastructure</option>
+              <option value="Marketing">Marketing</option>
+              <option value="HR">HR</option>
+              <option value="Legal">Legal</option>
+            </select>
+          </div>
+
+          <div class="field full hidden" id="departmentInputWrap">
+            <label for="departmentCustom">Department</label>
+            <input id="departmentCustom" type="text" placeholder="e.g. Internal Communication" />
           </div>
         </div>
       </div>
@@ -511,7 +529,7 @@
       cardWidth: 400,
       cardHeight: 700,
       avatar: { x: 135, y: 230, width: 130, height: 130 },
-      body: { x: 50, y: 460, width: 300, fontSize: 10, lineHeight: 1.22 }
+      body: { x: 50, y: 412, width: 300, fontSize: 10, lineHeight: 1.22 }
     };
 
     const state = {
@@ -522,6 +540,7 @@
     };
 
     const els = {
+      card: document.getElementById('card'),
       avatarImage: document.getElementById('avatarImage'),
       bodyText: document.getElementById('bodyText'),
 
@@ -529,7 +548,13 @@
       femalePrefixField: document.getElementById('femalePrefixField'),
       fullName: document.getElementById('fullName'),
       jobTitle: document.getElementById('jobTitle'),
-      department: document.getElementById('department'),
+
+      departmentMode: document.getElementById('departmentMode'),
+      departmentSelectWrap: document.getElementById('departmentSelectWrap'),
+      departmentInputWrap: document.getElementById('departmentInputWrap'),
+      departmentSelect: document.getElementById('departmentSelect'),
+      departmentCustom: document.getElementById('departmentCustom'),
+
       managerName: document.getElementById('managerName'),
       managerDepartment: document.getElementById('managerDepartment'),
       email: document.getElementById('email'),
@@ -559,24 +584,31 @@
       return state.gender === 'male' ? ASSETS.maleAvatar : ASSETS.femaleAvatar;
     }
 
+    function getDepartmentValue() {
+      if (els.departmentMode.value === 'custom') {
+        return els.departmentCustom.value.trim() || 'Department';
+      }
+      return els.departmentSelect.value.trim() || 'Department';
+    }
+
     function getBodyCopy() {
       const prefix = getSelectedPrefix();
       const fullName = els.fullName.value.trim() || 'Full Name';
       const jobTitle = els.jobTitle.value.trim() || 'Job Title';
-      const department = els.department.value.trim() || 'Department';
+      const department = getDepartmentValue();
       const managerName = els.managerName.value.trim() || 'Manager Name';
       const managerDepartment = els.managerDepartment.value.trim();
       const email = els.email.value.trim() || 'name@alraedah.sa';
       const pronoun = getReachPronoun();
 
       const managerLine = managerDepartment
-      ? `Line Manager: ${managerName} (${managerDepartment})`
+        ? `Line Manager: ${managerName} (${managerDepartment})`
         : `Line Manager: ${managerName}`;
 
       return `Dear all,
-      We are pleased to announce that;
+We are pleased to announce that;
 
-      ${prefix} ${fullName}, has joined Alraedah Finance
+${prefix} ${fullName}, has joined Alraedah Finance
 as a ${jobTitle} in ${department}.
 
 
@@ -590,12 +622,34 @@ Regards
 Human Resources`;
     }
 
+    function applyLayoutToPreview() {
+      els.card.style.width = `${LAYOUT.cardWidth}px`;
+      els.card.style.height = `${LAYOUT.cardHeight}px`;
+
+      els.avatarImage.style.left = `${LAYOUT.avatar.x}px`;
+      els.avatarImage.style.top = `${LAYOUT.avatar.y}px`;
+      els.avatarImage.style.width = `${LAYOUT.avatar.width}px`;
+      els.avatarImage.style.height = `${LAYOUT.avatar.height}px`;
+
+      els.bodyText.style.left = `${LAYOUT.body.x}px`;
+      els.bodyText.style.top = `${LAYOUT.body.y}px`;
+      els.bodyText.style.width = `${LAYOUT.body.width}px`;
+      els.bodyText.style.fontSize = `${LAYOUT.body.fontSize}px`;
+      els.bodyText.style.lineHeight = String(LAYOUT.body.lineHeight);
+    }
+
     function renderPrefixUI() {
       if (state.gender === 'male') {
         els.femalePrefixField.classList.add('hidden');
       } else {
         els.femalePrefixField.classList.remove('hidden');
       }
+    }
+
+    function renderDepartmentUI() {
+      const isCustom = els.departmentMode.value === 'custom';
+      els.departmentSelectWrap.classList.toggle('hidden', isCustom);
+      els.departmentInputWrap.classList.toggle('hidden', !isCustom);
     }
 
     function renderGenderButtons() {
@@ -623,7 +677,9 @@ Human Resources`;
     }
 
     function render() {
+      applyLayoutToPreview();
       renderPrefixUI();
+      renderDepartmentUI();
       renderGenderButtons();
       renderAvatar();
       renderBody();
@@ -831,12 +887,15 @@ Human Resources`;
       els.prefix,
       els.fullName,
       els.jobTitle,
-      els.department,
+      els.departmentMode,
+      els.departmentSelect,
+      els.departmentCustom,
       els.managerName,
       els.managerDepartment,
       els.email
     ].forEach(input => {
       input.addEventListener('input', render);
+      input.addEventListener('change', render);
     });
 
     els.photoUpload.addEventListener('change', async (e) => {
